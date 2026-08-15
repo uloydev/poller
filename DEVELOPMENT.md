@@ -4,8 +4,8 @@
 
 - Go 1.26 (pinned in `go.mod`)
 - golangci-lint v2 (config `.golangci.yml`)
-- Docker Compose dev stack (nms-app): PostgreSQL 16, ClickHouse, NATS
-- Every repo has a `Makefile` with: `fmt`, `lint`, `vet`, `test`, `test-integration`, `ci`, `build`
+- Docker, where integration tests need backing services
+- The `Makefile` provides: `fmt`, `lint`, `vet`, `test`, `test-integration`, `ci`, `build`
 
 ## Repo layout
 
@@ -13,7 +13,6 @@
 cmd/<binary>/main.go   thin main: config, wiring, run
 internal/              app-private packages
 pkg/                   public API of the repo
-schema/                migrations (nms-app only)
 ```
 
 No packages named `util`, `common`, or `misc`.
@@ -36,4 +35,4 @@ No packages named `util`, `common`, or `misc`.
 - [ ] Every export documented
 - [ ] Each error wrapped exactly once per layer
 - [ ] Goroutines bound by context cancellation
-- [ ] Metrics and labels follow `docs/METRIC_CONVENTIONS.md`
+- [ ] Metrics and labels follow `METRIC_CONVENTIONS.md`
