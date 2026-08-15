@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+          cache: true
+      - name: Lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v2.10.1
+      - name: Vet
+        run: go vet ./...
+      - name: Test (race)
+        run: go test -race ./...
+      - name: Coverage gate
+        run: |
+          test_count=$(go list -f '{{len .TestGoFiles}}' ./... | awk '{s+=$1} END{print s+0}')
+          if [ "$test_count" = "0" ]; then
+            echo "no tests yet — coverage gate skipped"
+          else
+            go test -race -coverprofile=coverage.out ./...
+            total=$(go tool cover -func=coverage.out | tail -1 | awk '{print $3}' | tr -d '%')
+            echo "total coverage: $total%"
+            [ "$(echo "$total >= 80" | bc)" = "1" ]
+          fi
+      - name: Build
+        run: go build ./...
