@@ -27,11 +27,12 @@ jobs:
         run: go test -race ./...
       - name: Coverage gate
         run: |
-          test_count=$(go list -f '{{len .TestGoFiles}}' ./... | awk '{s+=$1} END{print s+0}')
+          test_count=$(go list -f '{{len .TestGoFiles}} {{len .XTestGoFiles}}' ./... | awk '{s+=$1+$2} END{print s+0}')
           if [ "$test_count" = "0" ]; then
             echo "no tests yet — coverage gate skipped"
           else
-            go test -race -coverprofile=coverage.out ./...
+            cover_pkgs=$(go list ./... | grep -vE '/pkg/spacex\.com/|/cmd/' | paste -sd, -)
+            go test -race -coverprofile=coverage.out -coverpkg="$cover_pkgs" ./...
             total=$(go tool cover -func=coverage.out | tail -1 | awk '{print $3}' | tr -d '%')
             echo "total coverage: $total%"
             [ "$(echo "$total >= 80" | bc)" = "1" ]
